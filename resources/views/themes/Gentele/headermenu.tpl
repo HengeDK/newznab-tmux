@@ -320,12 +320,10 @@
                         {/foreach}
                     </select>
                 </div>
-                <div class="mr-auto mr-xs-auto mr-lg-auto mr-sm-auto mr-xl-auto">
-                    <form class="form-inline mt-2 mt-md-0">
-                        <input class="form-inline mr-sm-2" type="text" placeholder="Search" aria-label="Search" id="headsearch" name="search" value="{if $header_menu_search == ""}{else}{$header_menu_search|escape:"htmlall"}{/if}">
-                        {{Form::submit('Search', ['class' => 'btn btn-outline-success my-2 my-sm-0', 'id' => 'headsearch_go'])}}
-                    </form>
-                </div>
+<div class="nav mr-auto mr-xs-auto mr-lg-auto mr-sm-auto mr-xl-auto">
+    <input class="custom-input" type="text" placeholder="Search" aria-label="Search" id="headsearch" name="search" value="{if $header_menu_search == ""}{else}{$header_menu_search|escape:"htmlall"}{/if}">
+    {{Form::submit('Search', ['class' => 'btn btn-outline-success my-2 my-sm-0', 'id' => 'headsearch_go'])}}
+</div>
                 {{Form::close()}}
             </div>
         </li>
