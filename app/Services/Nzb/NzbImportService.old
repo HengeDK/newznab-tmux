@@ -17,7 +17,6 @@ use Illuminate\Support\Str;
 
 /**
  * Service for importing NZB files into the database.
- * Slug: nzb-import-password-meta
  */
 class NzbImportService
 {
@@ -234,18 +233,6 @@ class NzbImportService
         $totalFiles = $totalSize = $groupID = 0;
         $isBlackListed = $groupName = $firstName = $posterName = $postDate = false;
 
-        // --- PASSWORD EXTRACTION START ---
-        $nzbPassword = '';
-        if (isset($nzbXML->head->meta)) {
-            foreach ($nzbXML->head->meta as $meta) {
-                if (isset($meta->attributes()->type) && (string) $meta->attributes()->type === 'password') {
-                    $nzbPassword = (string) $meta;
-                    break;
-                }
-            }
-        }
-        // --- PASSWORD EXTRACTION END ---
-
         // Go through the NZB, get the details, look if it's blacklisted, look if we have the groups.
         foreach ($nzbXML->file as $file) {
             $binary_names[] = $file['subject'];
@@ -260,7 +247,7 @@ class NzbImportService
                 $posterName = (string) $file->attributes()->poster;
             }
             if ($postDate === false) {
-                $postDate = Carbon::createFromTimestamp((int) $file->attributes()->date, date_default_timezone_get())->format('Y-m-d H:i:s');
+                $postDate = Carbon::createFromTimestamp((string) $file->attributes()->date, date_default_timezone_get())->format('Y-m-d H:i:s');
             }
 
             // Make a fake message array to use to check the blacklist.
@@ -356,7 +343,6 @@ class NzbImportService
                 'groupName' => $groupName,
                 'totalFiles' => $totalFiles,
                 'totalSize' => $totalSize,
-                'password' => $nzbPassword, // Passed to insertNZB
             ]
         );
     }
@@ -414,7 +400,6 @@ class NzbImportService
                     'isrenamed' => $renamed,
                     'predb_id' => 0,
                     'nzbstatus' => NzbService::NZB_ADDED,
-                    'password' => $nzbDetails['password'], // Stored in DB
                 ]
             );
         } else {

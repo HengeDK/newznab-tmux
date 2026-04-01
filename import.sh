@@ -1,0 +1,1 @@
+php artisan nntmux:import-nzbs --folder=/var/www/nntmux/nzb_upload/ --filename --delete --delete-failed

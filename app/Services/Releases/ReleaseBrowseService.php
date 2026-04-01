@@ -465,136 +465,58 @@ class ReleaseBrowseService
         return Search::searchReleasesByExternalId($externalIds, $limit);
     }
 
-    /**
+/**
      * Get the count of releases for pager.
-     *
-     * @param  string  $query  The query to get the count from.
+     * Fixed to handle complex subqueries in JOINs.
      */
     private function getPagerCount(string $query): int
     {
-        $maxResults = (int) config('nntmux.max_pager_results');
-        $cacheExpiry = config('nntmux.cache_expiry_short');
+        $maxResults = (int) config('nntmux.max_pager_results', 500000);
+        $cacheExpiry = (int) config('nntmux.cache_expiry_short', 5);
 
-        // Generate cache key from original query
         $cacheKey = 'pager_count_'.md5($query);
 
-        // Check cache first
         $count = Cache::get($cacheKey);
         if ($count !== null) {
             return (int) $count;
         }
 
-        // Check if this is already a COUNT query
+        // Hvis det allerede er en COUNT query, så bare kør den
         if (preg_match('/SELECT\s+COUNT\s*\(/is', $query)) {
-            // It's already a COUNT query, just execute it
             try {
                 $result = DB::select($query);
-                if (isset($result[0])) {
-                    // Handle different possible column names
-                    $count = $result[0]->count ?? $result[0]->total ?? 0;
-                    // Check for COUNT(*) result without alias
-                    if ($count === 0) {
-                        foreach ($result[0] as $value) {
-                            $count = (int) $value;
-                            break;
-                        }
-                    }
-                } else {
-                    $count = 0;
-                }
-
-                // Cap the count at max results to prevent extremely large pagers
-                if ($maxResults > 0 && $count > $maxResults) {
-                    $count = $maxResults;
-                }
-
-                // Cache the result
-                Cache::put($cacheKey, $count, now()->addMinutes($cacheExpiry));
-
-                return $count;
+                $count = (int) ($result[0]->count ?? array_values((array)$result[0])[0] ?? 0);
+                return min($count, $maxResults);
             } catch (\Exception $e) {
                 return 0;
             }
         }
 
-        // For regular SELECT queries, optimize for counting
-        $countQuery = $query;
-
-        // Remove ORDER BY clause (not needed for COUNT)
-        $countQuery = preg_replace('/ORDER\s+BY\s+[^)]+$/is', '', $countQuery);
-
-        // Remove GROUP BY if it's only grouping by r.id
-        $countQuery = preg_replace('/GROUP\s+BY\s+r\.id\s*$/is', '', $countQuery);
-
-        // Check if query has DISTINCT in SELECT
-        $hasDistinct = preg_match('/SELECT\s+DISTINCT/is', $countQuery);
-
-        // Replace SELECT clause with COUNT
-        if ($hasDistinct || preg_match('/GROUP\s+BY/is', $countQuery)) {
-            // For queries with DISTINCT or GROUP BY, count distinct r.id
-            $countQuery = preg_replace(
-                '/SELECT\s+.+?\s+FROM/is',
-                'SELECT COUNT(DISTINCT r.id) as count FROM',
-                $countQuery
-            );
-        } else {
-            // For simple queries, use COUNT(*)
-            $countQuery = preg_replace(
-                '/SELECT\s+.+?\s+FROM/is',
-                'SELECT COUNT(*) as count FROM',
-                $countQuery
-            );
-        }
-
-        // Remove LIMIT/OFFSET from the count query
-        $countQuery = preg_replace('/LIMIT\s+\d+(\s+OFFSET\s+\d+)?$/is', '', $countQuery);
-
         try {
-            // Execute the count query
-            $result = DB::select($countQuery);
+            // STRATEGI: I stedet for at prøve at omskrive en kompleks query med regex,
+            // pakker vi den ind i en subquery. Det er meget mere sikkert for MariaDB.
+            
+            // Fjern ORDER BY og LIMIT da de er ligegyldige for total antal og kan sløve det ned
+            $optimizedQuery = preg_replace('/ORDER\s+BY\s+[^)]+$/is', '', $query);
+            $optimizedQuery = preg_replace('/LIMIT\s+\d+(\s+OFFSET\s+\d+)?$/is', '', $optimizedQuery);
+
+            $wrappedQuery = "SELECT COUNT(*) as count FROM ({$optimizedQuery}) AS t";
+            
+            $result = DB::select($wrappedQuery);
             $count = isset($result[0]) ? (int) $result[0]->count : 0;
 
-            // Cap the count at max results to prevent extremely large pagers
             if ($maxResults > 0 && $count > $maxResults) {
                 $count = $maxResults;
             }
 
-            // Cache the result
             Cache::put($cacheKey, $count, now()->addMinutes($cacheExpiry));
 
             return $count;
         } catch (\Exception $e) {
-            // If optimization fails, try a simpler approach
-            try {
-                // Extract the core table and WHERE conditions
-                if (preg_match('/FROM\s+releases\s+r\s+(.+?)(?:ORDER\s+BY|LIMIT|$)/is', $query, $matches)) {
-                    $conditions = $matches[1];
-                    // Remove JOINs but keep WHERE
-                    $conditions = preg_replace('/(?:LEFT\s+|INNER\s+)?(?:OUTER\s+)?JOIN\s+.+?(?=WHERE|LEFT|INNER|JOIN|$)/is', '', $conditions);
-
-                    $fallbackQuery = sprintf('SELECT COUNT(*) as count FROM releases r %s', trim($conditions));
-
-                    $result = DB::select($fallbackQuery);
-                    $count = isset($result[0]) ? (int) $result[0]->count : 0;
-
-                    // Cap the count at max results
-                    if ($maxResults > 0 && $count > $maxResults) {
-                        $count = $maxResults;
-                    }
-
-                    Cache::put($cacheKey, $count, now()->addMinutes($cacheExpiry));
-
-                    return $count;
-                }
-            } catch (\Exception $fallbackException) {
-                // Log the error for debugging
-                Log::error('getPagerCount failed', [
-                    'query' => $query,
-                    'error' => $fallbackException->getMessage(),
-                ]);
-            }
-
+            Log::error('getPagerCount failed', [
+                'query' => $query,
+                'error' => $e->getMessage(),
+            ]);
             return 0;
         }
-    }
-}
+    }}

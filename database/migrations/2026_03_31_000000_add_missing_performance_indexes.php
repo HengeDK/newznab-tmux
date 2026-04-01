@@ -64,7 +64,11 @@ return new class extends Migration
             });
         }
 
+
         // Priority 3: Forum tables â€” read-tracking has zero indexes
+
+        // Priority 3: Forum tables — read-tracking has zero indexes
+
 
         if (! $this->indexExists('forum_threads_read', 'ix_forum_threads_read_user_thread')) {
             Schema::table('forum_threads_read', function (Blueprint $table) {
@@ -110,7 +114,11 @@ return new class extends Migration
             });
         }
 
+<<<<<<< HEAD
         // Priority 5: Stats tables â€” time-range reporting
+=======
+        // Priority 5: Stats tables — time-range reporting
+>>>>>>> fbe99b3a5 (Gemmer mine rettelser fÃ¸r rebase)
 
         if (Schema::hasTable('grab_stats') && ! $this->indexExists('grab_stats', 'ix_grab_stats_created_at')) {
             Schema::table('grab_stats', function (Blueprint $table) {

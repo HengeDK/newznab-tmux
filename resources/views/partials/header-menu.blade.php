@@ -19,21 +19,22 @@
                                     <i class="fas fa-chevron-down ml-1 text-xs"></i>
                                 </button>
                                 <div class="dropdown-menu absolute left-0 top-full w-48 bg-gray-900 dark:bg-gray-950 rounded-xl shadow-lg z-50">
-                                    <a href="{{ url('/browse/' . $parentcat['title']) }}" class="block px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">All TV</a>
+                                    <a href="{{ url('/browse/' . $parentcat['title']) }}?thumbs=1" class="block px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">All TV</a>
                                     <div class="border-t border-white/10 dark:border-white/5"></div>
                                     <a href="{{ route('series') }}" class="block px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">TV Series</a>
                                     <div class="border-t border-white/10 dark:border-white/5"></div>
                                     @foreach($parentcat['categories'] as $subcat)
                                         @if($subcat['id'] == App\Models\Category::TV_FOREIGN)
                                             <div class="relative submenu-container">
-                                                <a href="{{ url('/browse/TV/' . $subcat['title']) }}" class="submenu-toggle flex items-center justify-between px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">
+                                                <a href="{{ url('/browse/TV?thumbs=1/' . $subcat['title']) }}" class="submenu-toggle flex items-center justify-between px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">
                                                     <span>{{ $subcat['title'] }}</span>
                                                     <i class="fas fa-chevron-right text-xs"></i>
                                                 </a>
                                                 <div class="submenu absolute left-full top-0 w-40 bg-gray-900 dark:bg-gray-950 rounded-xl shadow-lg z-50 ml-0.5 hidden">
-                                                    <a href="{{ url('/browse/TV/' . $subcat['title']) }}" class="block px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">All Foreign</a>
+                                                    <a href="{{ url('/browse/TV?thumbs=1/' . $subcat['title']) }}" class="block px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">All Foreign</a>
                                                     <div class="border-t border-white/10 dark:border-white/5"></div>
-                                                    <a href="{{ route('search', ['search' => 'German|Deutsch|DE|GER', 't' => App\Models\Category::TV_FOREIGN]) }}" class="block px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">German</a>
+                                                    <a href="{{ route('search', ['search' => 'Danish|Dansk|DK|DAN', 't' => App\Models\Category::TV_FOREIGN]) }}" class="block px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">Danish</a>
+						    <a href="{{ route('search', ['search' => 'German|Deutsch|DE|GER', 't' => App\Models\Category::TV_FOREIGN]) }}" class="block px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">German</a>
                                                     <a href="{{ route('search', ['search' => 'French|Francais|FR|FRENCH|VOSTFR|TRUEFRENCH', 't' => App\Models\Category::TV_FOREIGN]) }}" class="block px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">French</a>
                                                     <a href="{{ route('search', ['search' => 'Spanish|Espanol|ES|ESP|SPANISH|Latino', 't' => App\Models\Category::TV_FOREIGN]) }}" class="block px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">Spanish</a>
                                                     <a href="{{ route('search', ['search' => 'Italian|Italiano|IT|ITA', 't' => App\Models\Category::TV_FOREIGN]) }}" class="block px-4 py-2 text-sm text-gray-300 dark:text-gray-400 hover:bg-white/10 dark:hover:bg-white/5 hover:text-white dark:hover:text-white">Italian</a>

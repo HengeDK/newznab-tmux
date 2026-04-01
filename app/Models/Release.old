@@ -18,35 +18,163 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Properties from computed columns, joins, and subqueries.
- * * @property string|null $password Tilføjet til at gemme NZB password
- * ... (resten af dine properties)
+ *
+ * @property int|null $relsize From join/computed column
+ * @property int|null $_totalrows From subquery count
+ * @property string|null $textstring From join
+ * @property string|null $episodes From join
+ * @property string|null $category_name From join
+ * @property int|null $tvrage From join
+ * @property int|null $tvmaze From join
+ * @property int|null $tvdb From join
+ * @property int|null $trakt From join
+ * @property int|null $tmdb From join
+ * @property int|null $preid From join
+ * @property string|null $firstaired From join
+ * @property string|null $title From join
+ * @property string|null $summary From join
+ * @property string|null $sub_category From join
+ * @property float|null $size_diff Computed column
+ * @property string|null $showtitle From join
+ * @property string|null $se_complete From join
+ * @property int|null $files_total_size Computed column
+ * @property string|null $group_name From join (group relationship)
+ * @property string|null $image From join (video.tvInfo relationship)
+ * @property string|null $parent_category From join (category.parent relationship)
+ * @property string|null $category_ids Computed from category relationship
+ * @property string|null $group_names Computed from releaseGroup relationship
+ * @property float|null $release_size Computed column (size in GiB)
+ * @property float|null $diff_percent Computed column (difference percentage)
+ * @property int|null $releases_id From raw query alias
+ * @property int|null $_totalcount From subquery count
  */
 class Release extends Model
 {
-    use HasFactory;
+    use HasFactory; // @phpstan-ignore missingType.generics
 
     protected $dateFormat = false;
 
+    /**
+     * @var bool
+     */
     public $timestamps = false;
 
+    /**
+     * @var array<string>
+     */
     protected $guarded = [];
 
-    // ... (alle dine eksisterende relationer: group, download, userRelease, osv.)
+    /**
+     * @return BelongsTo<UsenetGroup, $this>
+     */
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(UsenetGroup::class, 'groups_id');
+    }
 
-    public function group(): BelongsTo { return $this->belongsTo(UsenetGroup::class, 'groups_id'); }
-    public function download(): HasMany { return $this->hasMany(UserDownload::class, 'releases_id'); }
-    public function userRelease(): HasMany { return $this->hasMany(UsersRelease::class, 'releases_id'); }
-    public function file(): HasMany { return $this->hasMany(ReleaseFile::class, 'releases_id'); }
-    public function category(): BelongsTo { return $this->belongsTo(Category::class, 'categories_id'); }
-    public function predb(): BelongsTo { return $this->belongsTo(Predb::class, 'predb_id'); }
-    public function failed(): HasMany { return $this->hasMany(DnzbFailure::class, 'release_id'); }
-    public function nfo(): HasOne { return $this->hasOne(ReleaseNfo::class, 'releases_id'); }
-    public function comment(): HasMany { return $this->hasMany(ReleaseComment::class, 'releases_id'); }
-    public function reports(): HasMany { return $this->hasMany(ReleaseReport::class, 'releases_id'); }
-    public function releaseGroup(): HasMany { return $this->hasMany(ReleasesGroups::class, 'releases_id'); }
-    public function video(): BelongsTo { return $this->belongsTo(Video::class, 'videos_id'); }
-    public function videoData(): HasOne { return $this->hasOne(VideoData::class, 'releases_id'); }
-    public function episode(): BelongsTo { return $this->belongsTo(TvEpisode::class, 'tv_episodes_id'); }
+    /**
+     * @return HasMany<UserDownload, $this>
+     */
+    public function download(): HasMany
+    {
+        return $this->hasMany(UserDownload::class, 'releases_id');
+    }
+
+    /**
+     * @return HasMany<UsersRelease, $this>
+     */
+    public function userRelease(): HasMany
+    {
+        return $this->hasMany(UsersRelease::class, 'releases_id');
+    }
+
+    /**
+     * @return HasMany<ReleaseFile, $this>
+     */
+    public function file(): HasMany
+    {
+        return $this->hasMany(ReleaseFile::class, 'releases_id');
+    }
+
+    /**
+     * @return BelongsTo<Category, $this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'categories_id');
+    }
+
+    /**
+     * @return BelongsTo<Predb, $this>
+     */
+    public function predb(): BelongsTo
+    {
+        return $this->belongsTo(Predb::class, 'predb_id');
+    }
+
+    /**
+     * @return HasMany<DnzbFailure, $this>
+     */
+    public function failed(): HasMany
+    {
+        return $this->hasMany(DnzbFailure::class, 'release_id');
+    }
+
+    /**
+     * @return HasOne<ReleaseNfo, $this>
+     */
+    public function nfo(): HasOne
+    {
+        return $this->hasOne(ReleaseNfo::class, 'releases_id');
+    }
+
+    /**
+     * @return HasMany<ReleaseComment, $this>
+     */
+    public function comment(): HasMany
+    {
+        return $this->hasMany(ReleaseComment::class, 'releases_id');
+    }
+
+    /**
+     * @return HasMany<ReleaseReport, $this>
+     */
+    public function reports(): HasMany
+    {
+        return $this->hasMany(ReleaseReport::class, 'releases_id');
+    }
+
+    /**
+     * @return HasMany<ReleasesGroups, $this>
+     */
+    public function releaseGroup(): HasMany
+    {
+        return $this->hasMany(ReleasesGroups::class, 'releases_id');
+    }
+
+    /**
+     * @return BelongsTo<Video, $this>
+     */
+    public function video(): BelongsTo
+    {
+        return $this->belongsTo(Video::class, 'videos_id');
+    }
+
+    /**
+     * @return HasOne<VideoData, $this>
+     */
+    public function videoData(): HasOne
+    {
+        return $this->hasOne(VideoData::class, 'releases_id');
+    }
+
+    /**
+     * @return BelongsTo<TvEpisode, $this>
+     */
+    public function episode(): BelongsTo
+    {
+        return $this->belongsTo(TvEpisode::class, 'tv_episodes_id');
+    }
 
     /**
      * Insert a single release returning the ID on success or false on failure.
@@ -58,14 +186,7 @@ class Release extends Model
      */
     public static function insertRelease(array $parameters = [])
     {
-        // Hvis der er et password med i NZB'en, sætter vi status til 1 (Passworded) 
-        // ellers bruger vi default tjek-status fra indstillingerne.
         $passwordStatus = config('nntmux_settings.check_passworded_rars') === true ? -1 : 0;
-        
-        if (!empty($parameters['password'])) {
-            $passwordStatus = 1; // Markeret som havende password
-        }
-
         $parameters['id'] = self::query()
             ->insertGetId(
                 [
@@ -80,7 +201,6 @@ class Release extends Model
                     'fromname' => $parameters['fromname'],
                     'size' => $parameters['size'],
                     'passwordstatus' => $passwordStatus,
-                    'password' => $parameters['password'] ?? null, // <--- NY LINJE
                     'haspreview' => -1,
                     'categories_id' => $parameters['categories_id'],
                     'nfostatus' => -1,
@@ -96,8 +216,6 @@ class Release extends Model
 
         return $parameters['id'];
     }
-
-    // ... (resten af dine eksisterende metoder: updateRelease, updateGrab, osv.)
 
     /**
      * @throws \Exception
@@ -130,6 +248,9 @@ class Release extends Model
         Search::updateRelease($id);
     }
 
+    /**
+     * @throws \Exception
+     */
     public static function updateGrab(string $guid): void
     {
         $updateGrabs = ((int) Settings::settingValue('grabstatus') !== 0);
@@ -138,6 +259,13 @@ class Release extends Model
         }
     }
 
+    /**
+     * Increment grabs for multiple releases by guid (single query).
+     *
+     * @param  list<string>  $guids
+     *
+     * @throws \Exception
+     */
     public static function updateGrabsByGuids(array $guids): void
     {
         if ($guids === []) {
@@ -149,6 +277,9 @@ class Release extends Model
         }
     }
 
+    /**
+     * @return Model|null|static
+     */
     public static function getCatByRelId(mixed $id)
     {
         return self::whereId($id)->first(['categories_id']);
@@ -208,6 +339,9 @@ class Release extends Model
         return $releases;
     }
 
+    /**
+     * @return Builder[]|\Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder[]|Collection|mixed
+     */
     public static function getReleases()
     {
         $expiresAt = now()->addMinutes(config('nntmux.cache_expiry_long'));
@@ -227,6 +361,12 @@ class Release extends Model
         return $releases;
     }
 
+    /**
+     * Used for admin page release-list.
+     *
+     * @param  int  $page  The page number to retrieve
+     * @return LengthAwarePaginator|mixed
+     */
     public static function getReleasesRange(int $page = 1): mixed
     {
         $expiresAt = now()->addMinutes(config('nntmux.cache_expiry_long'));
@@ -308,6 +448,10 @@ class Release extends Model
         return is_array($guid) ? $releases : $releases->first();
     }
 
+    /**
+     * Lighter version of getByGuid() optimized for API details responses.
+     * Skips video.tvInfo, releaseGroup, and fields not used by DetailsTransformer/XML_Response.
+     */
     public static function getByGuidForApi(mixed $guid): mixed
     {
         $query = self::with([
@@ -342,7 +486,10 @@ class Release extends Model
         return is_array($guid) ? $releases : $releases->first();
     }
 
-    public static function getFailedRange(): LengthAwarePaginator
+    /**
+     * Get a range of releases. used in admin manage list.
+     */
+    public static function getFailedRange(): LengthAwarePaginator // @phpstan-ignore missingType.generics
     {
         $failedList = self::query()
             ->select(['name', 'searchname', 'size', 'guid', 'totalpart', 'postdate', 'adddate', 'grabs', 'cp.title as parent_category', 'c.title as sub_category', DB::raw("CONCAT(cp.title, ' > ', c.title) AS category_name")])
@@ -354,6 +501,9 @@ class Release extends Model
         return $failedList->paginate(config('nntmux.items_per_page'));
     }
 
+    /**
+     * @return Release|false|Builder|Model|\Illuminate\Database\Query\Builder|object|null
+     */
     public static function getAlternate(string $guid, int $userid)
     {
         $rel = self::whereGuid($guid)->first(['id', 'searchname', 'categories_id']);

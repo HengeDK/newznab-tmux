@@ -2,7 +2,7 @@
     <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
         <p class="text-gray-300 dark:text-gray-400">
             &copy; {{ now()->year }}
-            <a href="https://github.com/NNTmux/newznab-tmux" class="text-primary-400 hover:text-primary-300 transition">NNTmux</a>
+            <a href="https://heimdal.pw" class="text-primary-400 hover:text-primary-300 transition">Heimdal</a>
         </p>
 
         <div class="flex items-center gap-4">
@@ -12,9 +12,6 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <a href="https://github.com/NNTmux/newznab-tmux" class="text-gray-300 dark:text-gray-400 hover:text-white transition" title="GitHub">
-                <i class="fab fa-github text-lg"></i>
-            </a>
             <a href="{{ url('/rss') }}" class="text-gray-300 dark:text-gray-400 hover:text-white transition" title="RSS Feeds">
                 <i class="fas fa-rss text-lg"></i>
             </a>
