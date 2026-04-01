@@ -60,3 +60,11 @@ Schedule::call(function () {
 // Check tmux health and auto-restart if monitor pane is dead
 Schedule::command('tmux:health-check --auto-restart')->everyThirtyMinutes()->withoutOverlapping();
 Schedule::command('nntmux:check-service-health')->everyFiveMinutes()->withoutOverlapping();
+
+// import nzb every 5 min
+Schedule::command('nntmux:import-nzbs', [
+    '--folder'        => '/var/nzb_upload/',
+    '--filename'      => true,
+    '--delete'        => true,
+    '--delete-failed' => true,
+])->everyFiveMinutes()->withoutOverlapping();
