@@ -61,6 +61,7 @@ Schedule::call(function () {
 Schedule::command('tmux:health-check --auto-restart')->everyThirtyMinutes()->withoutOverlapping();
 Schedule::command('nntmux:check-service-health')->everyFiveMinutes()->withoutOverlapping();
 
+
 // import nzb every 5 min
 Schedule::command('nntmux:import-nzbs', [
     '--folder'        => '/var/nzb_upload/',
@@ -68,3 +69,4 @@ Schedule::command('nntmux:import-nzbs', [
     '--delete'        => true,
     '--delete-failed' => true,
 ])->everyFiveMinutes()->withoutOverlapping();
+
